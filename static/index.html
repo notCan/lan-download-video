@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video İndirici</title>
+  <style>
+    :root {
+      --bg: #1a1b26;
+      --card: #24283b;
+      --text: #c0caf5;
+      --muted: #565f89;
+      --accent: #7aa2f7;
+      --success: #9ece6a;
+      --error: #f7768e;
+      --input-bg: #1f2335;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 1.5rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .header h1 { margin: 0; font-size: 1.35rem; }
+    a.logout {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    a.logout:hover { color: var(--accent); }
+    .card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 640px;
+      margin: 0 auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    label { display: block; margin-bottom: 0.35rem; color: var(--muted); font-size: 0.9rem; }
+    #url {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      background: var(--input-bg);
+      border: 1px solid var(--muted);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #url:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .clipboard-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 1rem;
+      background: rgba(122, 162, 247, 0.1);
+      border: 1px dashed var(--accent);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .clipboard-hint:hover { background: rgba(122, 162, 247, 0.15); color: var(--text); }
+    .clipboard-hint:active { opacity: 0.9; }
+    .clipboard-hint svg { flex-shrink: 0; opacity: 0.8; }
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn-row .btn,
+    .btn-row .btn-paste,
+    .btn-row .btn-clear {
+      flex: 1;
+      min-width: 0;
+    }
+    .btn-paste,
+    .btn-clear,
+    .btn-row .btn {
+      font-size: 1.35rem;
+      line-height: 1.2;
+      padding: 0.7rem 0.5rem;
+    }
+    .btn-paste {
+      background: var(--input-bg);
+      color: var(--accent);
+      border: 1px solid var(--muted);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-paste:hover { border-color: var(--accent); opacity: 0.9; }
+    .btn-paste:active { opacity: 0.8; }
+    .btn-clear {
+      background: var(--input-bg);
+      color: var(--muted);
+      border: 1px solid var(--muted);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-clear:hover { border-color: var(--error); color: var(--error); opacity: 0.9; }
+    .btn-clear:active { opacity: 0.8; }
+    .btn {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover:not(:disabled) { opacity: 0.9; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    #result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+      min-height: 52px;
+      font-size: 0.95rem;
+    }
+    #result.empty {
+      background: transparent;
+      color: var(--muted);
+    }
+    #result.loading {
+      background: var(--input-bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    #result.success {
+      background: rgba(158, 206, 106, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    #result.error {
+      background: rgba(247, 118, 142, 0.15);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--muted);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-wrap {
+      flex: 1;
+      margin-left: 0.25rem;
+    }
+    .progress-bar {
+      height: 8px;
+      background: var(--muted);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.2s;
+    }
+    a.download-link {
+      color: var(--accent);
+      text-decoration: none;
+      margin-top: 0.5rem;
+      display: inline-block;
+    }
+    a.download-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Video İndirici</h1>
+    <a href="/logout" class="logout" method="post">Çıkış</a>
+  </div>
+  <div class="card">
+    <label for="url">Video linki (Instagram, Twitter, TikTok, YouTube vb.)</label>
+    <input type="text" inputmode="url" id="url" placeholder="https://..." autocomplete="off">
+    <div class="clipboard-hint" id="clipboardHint" title="Kopyaladığınız linki buraya alır">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span id="clipboardHintText">Kopyaladığınız linki yapıştır</span>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn-paste" id="pasteBtn" title="Yapıştır">📋</button>
+      <button type="button" class="btn-clear" id="clearBtn" title="Temizle">✕</button>
+      <button type="button" class="btn" id="btn" title="İndir">⬇</button>
+    </div>
+
+    <div id="result" class="empty">
+      Link yapıştırıp İndir'e tıklayın.
+    </div>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById('url');
+    const btn = document.getElementById('btn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const result = document.getElementById('result');
+
+    function doPaste() {
+      urlInput.focus();
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          return navigator.clipboard.readText();
+        }
+      } catch (_) {}
+      return Promise.resolve(null);
+    }
+
+    function onPasteDone(text) {
+      if (text && text.trim()) {
+        urlInput.value = text;
+        setResult('empty', 'Link yapıştırıldı. İndir\'e tıklayın.');
+        var hint = document.getElementById('clipboardHintText');
+        if (hint) {
+          var old = hint.textContent;
+          hint.textContent = 'Link yapıştırıldı';
+          setTimeout(function() { hint.textContent = old; }, 2000);
+        }
+      } else {
+        setResult('empty', 'Panoda link yok. Önce bir link kopyalayın.');
+      }
+    }
+
+    function onPasteFail() {
+      setResult('empty', 'Linki kopyalayıp Yapıştır\'a veya yukarıdaki kutuya dokunun.');
+    }
+
+    pasteBtn.addEventListener('click', async function() {
+      try {
+        var text = await doPaste();
+        if (text !== null) onPasteDone(text);
+        else onPasteFail();
+      } catch (e) {
+        onPasteFail();
+      }
+    });
+
+    document.getElementById('clipboardHint').addEventListener('click', async function() {
+      try {
+        var text = await doPaste();
+        if (text !== null) onPasteDone(text);
+        else onPasteFail();
+      } catch (e) {
+        onPasteFail();
+      }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      urlInput.value = '';
+      setResult('empty', 'Link yapıştırıp İndir\'e tıklayın.');
+      var hint = document.getElementById('clipboardHintText');
+      if (hint) hint.textContent = 'Kopyaladığınız linki yapıştır';
+    });
+
+    function setResult(className, html) {
+      result.className = className;
+      result.innerHTML = html;
+    }
+
+    function setLoading(percent, eta) {
+      const etaStr = eta != null && eta > 0 ? ' &ndash; Tahmini: ' + eta + ' sn' : '';
+      result.className = 'loading';
+      result.innerHTML =
+        '<div class="spinner"></div>' +
+        '<div class="progress-wrap">' +
+        '<span>İndiriliyor… ' + (percent != null ? Math.round(percent) + '%' : '') + etaStr + '</span>' +
+        '<div class="progress-bar"><div class="progress-fill" style="width:' + (percent || 0) + '%"></div></div>' +
+        '</div>';
+    }
+
+    function pollStatus(taskId) {
+      const interval = setInterval(async () => {
+        try {
+          const r = await fetch('/status/' + taskId, { credentials: 'same-origin' });
+          if (!r.ok) return clearInterval(interval);
+          const data = await r.json();
+          if (data.status === 'downloading') {
+            setLoading(data.percent, data.eta);
+          } else if (data.status === 'done') {
+            clearInterval(interval);
+            btn.disabled = false;
+            const fn = data.filename || '';
+            const link = fn ? '<a class="download-link" href="/downloads/' + encodeURIComponent(fn) + '" download>Dosyayı indir</a>' : '';
+            setResult('success', 'İndirme başarılı.' + (fn ? ' Dosya: ' + fn + '<br>' + link : ''));
+          } else if (data.status === 'error') {
+            clearInterval(interval);
+            btn.disabled = false;
+            setResult('error', 'İndirme başarısız: ' + (data.error || 'Bilinmeyen hata'));
+          }
+        } catch (_) {
+          clearInterval(interval);
+          btn.disabled = false;
+          setResult('error', 'İndirme başarısız: Bağlantı hatası');
+        }
+      }, 800);
+    }
+
+    btn.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) {
+        setResult('error', 'Lütfen bir link yapıştırın.');
+        return;
+      }
+      btn.disabled = true;
+      setLoading(0, null);
+      try {
+        const r = await fetch('/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ url: url })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.task_id) {
+          pollStatus(data.task_id);
+        } else {
+          btn.disabled = false;
+          setResult('error', data.error || data.detail || 'İstek başarısız.');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        setResult('error', 'Bağlantı hatası.');
+      }
+    });
+  </script>
+</body>
+</html>

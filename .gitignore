@@ -1,0 +1,25 @@
+# Environment and secrets
+.env
+.env.local
+*.env
+
+# Dependencies and venv
+node_modules/
+.venv/
+venv/
+*.egg-info/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# App data
+downloads/
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db

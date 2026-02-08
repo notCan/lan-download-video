@@ -17,6 +17,7 @@ __pycache__/
 htmlcov/
 
 # App data
+data/
 downloads/
 
 # Logs and OS

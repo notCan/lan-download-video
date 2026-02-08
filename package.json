@@ -1,9 +1,1 @@
-{
-  "name": "download-linked-video",
-  "version": "1.0.0",
-  "description": "LAN video indirici - QR kod icin qrcode-terminal",
-  "private": true,
-  "dependencies": {
-    "qrcode-terminal": "^0.12.0"
-  }
-}
+{"name":"lan-download-video","version":"2.0.0","description":"LAN video indirici - QR kod icin qrcode-terminal","private":true,"dependencies":{"qrcode-terminal":"^0.12.0"}}

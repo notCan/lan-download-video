@@ -24,11 +24,11 @@ for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr "IPv4"') do (
 
 set IP=!IP: =!
 
-set QR_URL=http://!IP!:3369
+set QR_URL=http://!IP!:3335
 
 echo ================================
 echo   Tarayıcıda veya telefonda gir:
-echo   http://!IP!:3369
+echo   http://!IP!:3335
 echo ================================
 echo.
 echo QR KOD (telefonla okut):
@@ -71,7 +71,7 @@ if %ERRORLEVEL% neq 0 (
     )
 )
 
-%PYTHON_CMD% -m uvicorn main:app --host 0.0.0.0 --port 3369
+%PYTHON_CMD% -m uvicorn main:app --host 0.0.0.0 --port 3335
 
 echo.
 echo ================================

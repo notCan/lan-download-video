@@ -52,11 +52,11 @@ Instagram, Twitter/X, TikTok, YouTube ve diğer 1000+ siteden video indiren, LAN
 ## Çalıştırma
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 3369
+uvicorn main:app --host 0.0.0.0 --port 3335
 ```
 
-- Yerel: http://127.0.0.1:3369  
-- LAN: Aynı ağdaki cihazlardan `http://<bu-bilgisayarın-ip>:3369`
+- Yerel: http://127.0.0.1:3335  
+- LAN: Aynı ağdaki cihazlardan `http://<bu-bilgisayarın-ip>:3335`
 
 Windows'ta `start.bat` kullanırsanız sunucu başlar, IP ve QR kod konsola yazılır (Node.js ve `qrcode-terminal` gerekir).
 

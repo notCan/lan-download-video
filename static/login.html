@@ -34,6 +34,7 @@
       max-width: 360px;
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
+    .card.hidden { display: none; }
     h1 {
       margin: 0 0 1.5rem;
       font-size: 1.5rem;
@@ -50,21 +51,9 @@
       color: var(--text);
       font-size: 1rem;
     }
-    input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-    }
-    input[type="checkbox"] {
-      width: 1.1rem;
-      height: 1.1rem;
-      accent-color: var(--accent);
-    }
+    input:focus { outline: none; border-color: var(--accent); }
+    .row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; }
+    input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
     button[type="submit"] {
       width: 100%;
       padding: 0.75rem 1rem;
@@ -77,28 +66,93 @@
       cursor: pointer;
     }
     button[type="submit"]:hover { opacity: 0.9; }
-    .error {
-      color: var(--error);
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-    }
-    <!-- error -->
+    .error { color: var(--error); font-size: 0.9rem; margin-bottom: 1rem; }
+    .switch { margin-top: 1rem; font-size: 0.9rem; color: var(--muted); }
+    .btn-link { background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; text-decoration: underline; font-size: inherit; }
   </style>
 </head>
 <body>
-  <div class="card">
+  <div id="login-card" class="card">
     <h1>Giriş yap</h1>
-    <form method="post" action="/login">
+    <p id="login-error" class="error" style="display:none;"></p>
+    <form id="login-form">
       <label for="username">Kullanıcı adı</label>
-      <input type="text" id="username" name="username" required autocomplete="username">
+      <input type="text" id="username" required autocomplete="username" placeholder="Kullanıcı adı">
       <label for="password">Şifre</label>
-      <input type="password" id="password" name="password" required autocomplete="current-password">
+      <input type="password" id="password" required autocomplete="current-password" placeholder="Şifre">
       <div class="row">
-        <input type="checkbox" id="remember_me" name="remember_me" value="on">
+        <input type="checkbox" id="remember_me" checked>
         <label for="remember_me" style="margin:0">Beni hatırla</label>
       </div>
       <button type="submit">Giriş yap</button>
     </form>
+    <p class="switch">Hesabınız yok mu? <button type="button" id="btn-register" class="btn-link">Kayıt ol</button></p>
   </div>
+  <div id="register-card" class="card hidden">
+    <h1>Kayıt ol</h1>
+    <p id="register-error" class="error" style="display:none;"></p>
+    <form id="register-form">
+      <label for="reg-username">Kullanıcı adı</label>
+      <input type="text" id="reg-username" required autocomplete="username" minlength="2" placeholder="Kullanıcı adı">
+      <label for="reg-password">Şifre</label>
+      <input type="password" id="reg-password" required autocomplete="new-password" placeholder="Şifre">
+      <button type="submit">Kayıt ol</button>
+    </form>
+    <p class="switch">Zaten hesabınız var mı? <button type="button" id="btn-login" class="btn-link">Giriş yap</button></p>
+  </div>
+  <script>
+    const opts = { credentials: 'include' };
+    fetch('/api/auth/me', opts).then(function (r) {
+      if (r.ok) { window.location.href = '/'; }
+    }).catch(function () {});
+    document.getElementById('btn-register').onclick = function () {
+      document.getElementById('login-card').classList.add('hidden');
+      document.getElementById('register-card').classList.remove('hidden');
+      document.getElementById('login-error').style.display = 'none';
+    };
+    document.getElementById('btn-login').onclick = function () {
+      document.getElementById('register-card').classList.add('hidden');
+      document.getElementById('login-card').classList.remove('hidden');
+      document.getElementById('register-error').style.display = 'none';
+    };
+    document.getElementById('login-form').onsubmit = function (e) {
+      e.preventDefault();
+      var err = document.getElementById('login-error');
+      err.style.display = 'none';
+      var username = document.getElementById('username').value.trim();
+      var password = document.getElementById('password').value;
+      fetch('/api/auth/login', {
+        method: 'POST',
+        ...opts,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+          rememberMe: document.getElementById('remember_me').checked
+        })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (x) {
+          if (x.ok) window.location.href = '/';
+          else { err.textContent = x.d.error || 'Giriş yapılamadı'; err.style.display = 'block'; }
+        }).catch(function () { err.textContent = 'Bağlantı hatası'; err.style.display = 'block'; });
+    };
+    document.getElementById('register-form').onsubmit = function (e) {
+      e.preventDefault();
+      var err = document.getElementById('register-error');
+      err.style.display = 'none';
+      var username = document.getElementById('reg-username').value.trim();
+      var password = document.getElementById('reg-password').value;
+      fetch('/api/auth/register', {
+        method: 'POST',
+        ...opts,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, password: password })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (x) {
+          if (x.ok) window.location.href = '/';
+          else { err.textContent = x.d.error || 'Kayıt olunamadı'; err.style.display = 'block'; }
+        }).catch(function () { err.textContent = 'Bağlantı hatası'; err.style.display = 'block'; });
+    };
+  </script>
 </body>
 </html>

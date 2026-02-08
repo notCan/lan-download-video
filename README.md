@@ -52,11 +52,11 @@ No need to create the `downloads/` folder; the app creates it when the first dow
 ## Run
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 3369
+uvicorn main:app --host 0.0.0.0 --port 3335
 ```
 
-- Local: http://127.0.0.1:3369  
-- LAN: from other devices use `http://<this-computer-ip>:3369`
+- Local: http://127.0.0.1:3335  
+- LAN: from other devices use `http://<this-computer-ip>:3335`
 
 On Windows you can use `start.bat`; it starts the server and shows the IP and a QR code (requires Node.js and `qrcode-terminal`).
 

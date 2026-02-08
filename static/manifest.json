@@ -1,6 +1,6 @@
 {
-  "name": "Video İndirici",
-  "short_name": "Video İndirici",
+  "name": "downloaderLAN",
+  "short_name": "downloaderLAN",
   "description": "LAN video indirici",
   "start_url": "/",
   "display": "standalone",

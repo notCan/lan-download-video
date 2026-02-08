@@ -51,6 +51,16 @@ def startup():
     ensure_dirs()
 
 
+@app.get("/manifest.json")
+async def manifest():
+    return FileResponse(STATIC_DIR / "manifest.json", media_type="application/json")
+
+
+@app.get("/sw.js")
+async def sw():
+    return FileResponse(STATIC_DIR / "sw.js", media_type="application/javascript")
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     if read_session(request):
